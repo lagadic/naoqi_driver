@@ -32,7 +32,7 @@ namespace naoqi {
 
 namespace tools {
 
-NaoqiImage fromAnyValueToNaoqiImage(qi::AnyValue& value);
+NaoqiImage fromAnyValueToNaoqiImage(qi::AnyValue& value, const int &colorspace);
 
 std::vector<std::string> fromAnyValueToStringVector(qi::AnyValue& value, std::vector<std::string>& result);
 

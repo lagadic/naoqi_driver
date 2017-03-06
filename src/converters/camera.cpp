@@ -126,7 +126,7 @@ CameraConverter::CameraConverter( const std::string& name, const float& frequenc
     camera_source_(camera_source),
     resolution_(resolution),
     // change in case of depth camera
-    colorspace_( (camera_source_!=AL::kDepthCamera)?AL::kRGBColorSpace:AL::kRawDepthColorSpace ),
+    colorspace_( (camera_source_!=AL::kDepthCamera)?AL::kYUV422ColorSpace:AL::kRawDepthColorSpace ),
     msg_colorspace_( (camera_source_!=AL::kDepthCamera)?"rgb8":"16UC1" ),
     cv_mat_type_( (camera_source_!=AL::kDepthCamera)?CV_8UC3:CV_16U ),
     camera_info_( camera_info_definitions::getCameraInfo(camera_source, resolution) )
@@ -202,7 +202,7 @@ void CameraConverter::callAll( const std::vector<message_actions::MessageAction>
   qi::AnyValue image_anyvalue = p_video_.call<qi::AnyValue>("getImageRemote", handle_);
   tools::NaoqiImage image;
   try{
-      image = tools::fromAnyValueToNaoqiImage(image_anyvalue);
+    image = tools::fromAnyValueToNaoqiImage(image_anyvalue, colorspace_);
   }
   catch(std::runtime_error& e)
   {
