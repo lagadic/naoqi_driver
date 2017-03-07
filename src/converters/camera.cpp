@@ -175,13 +175,13 @@ void CameraConverter::reset()
   }
 
   handle_ = p_video_.call<std::string>(
-                         "subscribeCamera",
-                          name_,
-                          camera_source_,
-                          resolution_,
-                          colorspace_,
-                          frequency_
-                          );
+        "subscribeCamera",
+        name_,
+        camera_source_,
+        resolution_,
+        colorspace_,
+        frequency_
+        );
 }
 
 void CameraConverter::registerCallback( const message_actions::MessageAction action, Callback_t cb )
@@ -202,7 +202,7 @@ void CameraConverter::callAll( const std::vector<message_actions::MessageAction>
   qi::AnyValue image_anyvalue = p_video_.call<qi::AnyValue>("getImageRemote", handle_);
   tools::NaoqiImage image;
   try{
-    image = tools::fromAnyValueToNaoqiImage(image_anyvalue, colorspace_);
+    image = tools::fromAnyValueToNaoqiImage(image_anyvalue);
   }
   catch(std::runtime_error& e)
   {
@@ -210,8 +210,22 @@ void CameraConverter::callAll( const std::vector<message_actions::MessageAction>
     return;
   }
 
-  // Create a cv::Mat of the right dimensions
-  cv::Mat cv_img(image.height, image.width, cv_mat_type_, image.buffer);
+  cv::Mat cv_img;
+
+  if (colorspace_ == AL::kYUV422ColorSpace)
+  {
+    cv::Mat cv_YUV(image.height, image.width, CV_8UC2, image.buffer);
+    cvtColor(cv_YUV, cv_img, CV_YUV2RGB_YUYV);
+
+  }
+  else
+  {
+    // Create a cv::Mat of the right dimensions
+    //cv_img.create(image.height, image.width, cv_mat_type_);
+    //cv_img.data = (unsigned char*)image.buffer;
+    cv_img = cv::Mat(image.height, image.width, cv_mat_type_,image.buffer);
+  }
+
   msg_ = cv_bridge::CvImage(std_msgs::Header(), msg_colorspace_, cv_img).toImageMsg();
   msg_->header.frame_id = msg_frameid_;
 

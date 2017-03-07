@@ -21,54 +21,8 @@
 namespace naoqi {
 
 namespace tools {
-/**
-* Pattern :
-* raw[2*i+0]-raw[2*i+1]-raw[2*i+2]-raw[2*i+3]
-* Y - V - Y' - U
-* pixel[i] = YUV;
-* pixel[i+1] = Y'UV;
-**/
-void deinterlaceToYuvPixel(unsigned char* rawDataPtr, unsigned char* dataOut)
-{
-  dataOut[0] = rawDataPtr[0];
-  dataOut[1] = rawDataPtr[3];
-  dataOut[2] = rawDataPtr[1];
-  dataOut[3+0] = rawDataPtr[2];
-  dataOut[3+1] = rawDataPtr[3];
-  dataOut[3+2] = rawDataPtr[1];
-}
-/** Converstion YUV to RGB **/
-void yuvToRgb(unsigned char* dataPtr, int width, int height)
-{
-  float RCoeff = 1.403f;
-  float GCoeff1 = 0.714f;
-  float GCoeff2 = 0.344f;
-  float BCoeff = 1.773f;
-  float delta = 128.0f;
-  for(int i = 0 ; i < width*height ; ++i) {
-    float R1 = (float(dataPtr[3*i+0]) + RCoeff * (float(dataPtr[3*i+1])-delta));
-    float G1 = (float(dataPtr[3*i+0]) - GCoeff1 * (float(dataPtr[3*i+1])-delta) - GCoeff2 * (float(dataPtr[3*i+2])-delta));
-    float B1 = (float(dataPtr[3*i+0]) + BCoeff * (float(dataPtr[3*i+2])-delta));
-    if (R1 < 0)
-      R1 = 0;
-    else if (R1 > 255)
-      R1 = 255;
-    if (G1 < 0)
-      G1 = 0;
-    else if (G1 > 255)
-      G1 = 255;
-    if (B1 < 0)
-      B1 = 0;
-    else if (B1 > 255)
-      B1 = 255;
-    dataPtr[3*i+0] = (unsigned char)R1;
-    dataPtr[3*i+1] = (unsigned char)G1;
-    dataPtr[3*i+2] = (unsigned char)B1;
-  }
 
-}
-
-NaoqiImage fromAnyValueToNaoqiImage(qi::AnyValue& value, const int & colorspace){
+NaoqiImage fromAnyValueToNaoqiImage(qi::AnyValue& value){
   qi::AnyReferenceVector anyref;
   NaoqiImage result;
   std::ostringstream ss;
@@ -158,25 +112,7 @@ NaoqiImage fromAnyValueToNaoqiImage(qi::AnyValue& value, const int & colorspace)
   ref = anyref[6].content();
   if(ref.kind() == qi::TypeKind_Raw)
   {
-    if (colorspace == AL::kYUV422ColorSpace)
-    {
-      unsigned char* rawDataPtr = (unsigned char*)( ref.asRaw().first);
-      static unsigned char* rgbBufferPtr = NULL;
-      if (rgbBufferPtr == NULL) {
-        rgbBufferPtr = new unsigned char[result.width * result.height * 3]();
-      }
-
-      for (int i = 0 ; i < result.width * result.height ; i=i+2) {
-        deinterlaceToYuvPixel(rawDataPtr+2*i, rgbBufferPtr+3*i);
-      }
-      yuvToRgb(rgbBufferPtr,result.width, result.height);
-      result.buffer = (void*)rgbBufferPtr;
-    }
-    else
-    {
-      result.buffer = (void*)ref.asRaw().first;
-    }
-
+    result.buffer = (void*)ref.asRaw().first;
   }
   else
   {
