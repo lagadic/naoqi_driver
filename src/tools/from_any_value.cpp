@@ -161,8 +161,11 @@ NaoqiImage fromAnyValueToNaoqiImage(qi::AnyValue& value, const int & colorspace)
     if (colorspace == AL::kYUV422ColorSpace)
     {
       unsigned char* rawDataPtr = (unsigned char*)( ref.asRaw().first);
-      unsigned char* rgbBufferPtr = NULL;
-      rgbBufferPtr = new unsigned char[result.width * result.height * 3]();
+      static unsigned char* rgbBufferPtr = NULL;
+      if (rgbBufferPtr == NULL) {
+        rgbBufferPtr = new unsigned char[result.width * result.height * 3]();
+      }
+
       for (int i = 0 ; i < result.width * result.height ; i=i+2) {
         deinterlaceToYuvPixel(rawDataPtr+2*i, rgbBufferPtr+3*i);
       }
