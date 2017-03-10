@@ -216,13 +216,9 @@ void CameraConverter::callAll( const std::vector<message_actions::MessageAction>
   {
     cv::Mat cv_YUV(image.height, image.width, CV_8UC2, image.buffer);
     cvtColor(cv_YUV, cv_img, CV_YUV2RGB_YUYV);
-
   }
   else
   {
-    // Create a cv::Mat of the right dimensions
-    //cv_img.create(image.height, image.width, cv_mat_type_);
-    //cv_img.data = (unsigned char*)image.buffer;
     cv_img = cv::Mat(image.height, image.width, cv_mat_type_,image.buffer);
   }
 
